@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-#########################################################
-#	File name: stepMotor.py
-#	   Author: Jason Dai
-#	     Date: 2015/01/26
-#########################################################
+#-*-coding:utf8-*-
 import RPi.GPIO as GPIO
 import time
 
@@ -26,15 +22,22 @@ def stop():
 
 def forward(delay, steps):
     for i in range(0, steps):
+        setStep(1, 1, 1, 0)
+        time.sleep(delay)
+        setStep(0, 1, 1, 0)
+        time.sleep(delay)
         setStep(0, 1, 1, 1)
+        time.sleep(delay)
+        setStep(0, 0, 1, 1)
         time.sleep(delay)
         setStep(1, 0, 1, 1)
         time.sleep(delay)
+        setStep(1, 0, 0, 1)
+        time.sleep(delay)
         setStep(1, 1, 0, 1)
         time.sleep(delay)
-        setStep(1, 1, 1, 0)
+        setStep(1, 1, 0, 0)
         time.sleep(delay)
-
 
 def backward(delay, steps):
     for i in range(0, steps):
@@ -69,7 +72,11 @@ def setup():
 def loop():
     while True:
         print("backward...")
-        backward(0.009, 100)  # 512 steps --- 360 angle
+        backward(0.05, 100)  # 512 steps --- 360 angle
+        stop()
+        time.sleep(1)
+        print('forward...')
+        forward(0.05, 100)
         #
         # print("stop...")
         # stop()  # stop
