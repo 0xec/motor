@@ -1,62 +1,49 @@
 #!/usr/bin/env python
 #-*-coding:utf8-*-
-import RPi.GPIO as GPIO
 import time
+try:
+    import RPi.GPIO as GPIO
+except:
+    pass
+
 
 IN1 = 5  # pin11
 IN2 = 6
 IN3 = 13
 IN4 = 19
 
+PINS = [5, 6, 13, 19]
 
-def setStep(w1, w2, w3, w4):
-    GPIO.output(IN1, w1)
-    GPIO.output(IN2, w2)
-    GPIO.output(IN3, w3)
-    GPIO.output(IN4, w4)
+Code_CCW = [0x08, 0x0c, 0x04, 0x06, 0x02, 0x03, 0x01, 0x09]
+Code_CW_ = [0x09, 0x01, 0x03, 0x02, 0x06, 0x04, 0x0c, 0x08]
+
+def setStep(bCode):
+    bCode = bCode & 0x0f
+    for idx in range(0, 4):
+        ch = (bCode & 0x08) >> 3 ^ 1
+        # print('%1u' % ch),
+        bCode = bCode << 1
+        GPIO.output(PINS[3-idx], ch)
+
+    # print('')
+
 
 
 def stop():
-    setStep(0, 0, 0, 0)
+    setStep(1)
 
 
 def forward(delay, steps):
     for i in range(0, steps):
-        setStep(1, 1, 1, 0)
-        time.sleep(delay)
-        setStep(0, 1, 1, 0)
-        time.sleep(delay)
-        setStep(0, 1, 1, 1)
-        time.sleep(delay)
-        setStep(0, 0, 1, 1)
-        time.sleep(delay)
-        setStep(1, 0, 1, 1)
-        time.sleep(delay)
-        setStep(1, 0, 0, 1)
-        time.sleep(delay)
-        setStep(1, 1, 0, 1)
-        time.sleep(delay)
-        setStep(1, 1, 0, 0)
-        time.sleep(delay)
+        for idx in Code_CW_:
+            setStep(idx)
+            time.sleep(delay)
 
 def backward(delay, steps):
     for i in range(0, steps):
-        setStep(1, 1, 1, 0)
-        time.sleep(delay)
-        setStep(1, 1, 0, 0)
-        time.sleep(delay)
-        setStep(1, 1, 0, 1)
-        time.sleep(delay)
-        setStep(1, 0, 0, 1)
-        time.sleep(delay)
-        setStep(1, 0, 1, 1)
-        time.sleep(delay)
-        setStep(0, 0, 1, 1)
-        time.sleep(delay)
-        setStep(0, 1, 1, 1)
-        time.sleep(delay)
-        setStep(0, 1, 1, 0)
-        time.sleep(delay)
+        for idx in Code_CCW:
+            setStep(idx)
+            time.sleep(delay)
 
 def setup():
     GPIO.setwarnings(False)
@@ -71,29 +58,23 @@ def setup():
 
 def loop():
     while True:
-        print("backward...")
-        backward(0.05, 100)  # 512 steps --- 360 angle
+        print('forward...')
+        forward(0.03, 100)
         stop()
         time.sleep(1)
-        print('forward...')
-        forward(0.05, 100)
-        #
-        # print("stop...")
-        # stop()  # stop
-        # time.sleep(3)  # sleep 3s
-        #
-        # print("forward...")
-        # forward(0.02, 100)
-        #
-        # print("stop...")
-        # stop()
-        # time.sleep(3)
-
+        
+        print("backward...")
+        backward(0.03, 100)  # 512 steps --- 360 angle
+        stop()
+        time.sleep(1)
+        
 
 def destroy():
     GPIO.cleanup()  # Release resource
 
-
+# for idx in Code_CCW:
+#     setStep(idx)
+#     #time.sleep(delay)
 if __name__ == '__main__':  # Program start from here
     setup()
     try:

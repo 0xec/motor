@@ -1,0 +1,10 @@
+{
+    "type": "sftp",
+    "host": "192.168.31.136",
+    "user": "pi",
+    "password": "raspberry",
+    "port": "22",
+
+    "remotePath": "/home/pi/projects",
+    "uploadOnSave": false
+}
